@@ -11,4 +11,4 @@ hangman_server: hangman_server.c
 
 clean:
 	rm -f *.o hangman_client *~
-	rm -f *.o client_c_udp *~
+	rm -f *.o hangman_server *~
