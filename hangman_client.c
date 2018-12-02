@@ -67,8 +67,6 @@ int main(int argc, char *argv[])
     }
 
     while(1) {
-        n = read(sockfd,buffer,255);
-        if (n < 0) error("recvfrom");
         printf("Letter to guess: ");
         bzero(buffer,256);
         fgets(buffer,256,stdin);
@@ -78,6 +76,55 @@ int main(int argc, char *argv[])
             buffer[2] = '\0';
             n = write(sockfd,buffer,strlen(buffer));
             if (n < 0) error("Sendto");
+            n = read(sockfd,buffer,255);
+            if (n < 0) error("recvfrom");
+            if(buffer[0] == '0') { // In game
+                int word_len = buffer[1] - '0';
+                int attempts = buffer[2] - '0';
+                for(int i = 3; i < 3+word_len; i++) {
+                    printf("%c", buffer[i]);
+                }
+                printf("\nIncorrect Guesses: ");
+                for(int i = 0; i < attempts; i++) {
+                    printf("%c ", buffer[i]);
+                }
+                printf("\n");
+            } else { // Game ends
+                int msg_len;
+                if(buffer[0] == 'a') {
+                    msg_len = 10;
+                } else {
+                    msg_len = buffer[0] - '0';
+                }
+                printf("The word was ");
+                for(int i = 1; i < msg_len+1; i++) {
+                    printf("%c", buffer[i]);
+                }
+                printf("\n");
+                n = read(sockfd,buffer,255);
+                if (n < 0) error("recvfrom");
+                if(buffer[0] == 'a') {
+                    msg_len = 10;
+                } else {
+                    msg_len = buffer[0] - '0';
+                }
+                for(int i = 1; i < msg_len+1; i++) {
+                    printf("%c", buffer[i]);
+                }
+                printf("\n");
+                n = read(sockfd,buffer,255);
+                if (n < 0) error("recvfrom");
+                if(buffer[0] == 'a') {
+                    msg_len = 10;
+                } else {
+                    msg_len = buffer[0] - '0';
+                }
+                for(int i = 1; i < msg_len+1; i++) {
+                    printf("%c", buffer[i]);
+                }
+                printf("\n");
+                break;
+            }
         } else {
             printf("Error! Please guess one letter.\n");
         }
