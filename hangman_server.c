@@ -1,7 +1,7 @@
-/* Creates a datagram server.  The port 
-   number is passed as an argument.  This
-   server runs forever */
-
+/* 
+    Tiange Wang, ID: 3717659, CS 176A Homework 5
+    Code Cited: http://www.linuxhowtos.org/data/6/server_udp.c, Sockets Tutorial, Example UDP Server.
+*/
 #include <sys/types.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -48,6 +48,6 @@ int main(int argc, char *argv[])
         n = sendto(sock,"Got your message\n",17,0,(struct sockaddr *)&from,fromlen);
         if (n  < 0) error("sendto");
     }
-    
+
     return 0;
 }
