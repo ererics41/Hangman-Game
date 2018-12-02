@@ -54,6 +54,12 @@ int main(int argc, char *argv[]) {
             close(sockfd);
             char word[256] = "apple";
             int word_len = 5;
+            char guess[256];
+            for(int i = 0; i < word_len; i++) {
+                guess[i] = '_';
+            }
+            int attempts = 0;
+            char attempt_store[256];
             while(1) {
                 bzero(buffer, 256);
                 n = read(newsockfd, buffer, 256);
@@ -67,11 +73,31 @@ int main(int argc, char *argv[]) {
                     n = write(newsockfd, buffer, 256);
                     if (n < 0) error("ERROR writing to socket");
                 } else {
-                    for(int i = 0; i < word_len; i++) { // Change to length later
-                        if(word[i] == buffer[i + 3]) {
-
+                    int no_correct = 1;
+                    int all_correct = 1;
+                    for(int i = 0; i < word_len; i++) { 
+                        if(word[i] == buffer[1]) {
+                            guess[i] = buffer[1];
+                            no_correct = 0;
                         }
                     }
+                    for(int i = 0; i < word_len; i++) {
+                        if(guess[i] == '_') {
+                            all_correct = 0;
+                            break;
+                        }
+                    }
+                    if(all_correct == 1) {
+                        break; // Success
+                    }
+                    if(no_correct == 1) {
+                        attempt_store[attempts] = buffer[1];
+                        attempts++;
+                        if(attempts >= 6) { // Fail
+                            break;
+                        }
+                    }
+                    
                 }
             }
             close(newsockfd);
