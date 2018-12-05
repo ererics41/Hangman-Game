@@ -48,15 +48,20 @@ int main(int argc, char *argv[])
     if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) 
         error("ERROR connecting");
 
+    // Check if the server has an available spot for the client
+    bzero(buffer, 256);
+    buffer[0] = 'a';
+    n = write(sockfd, buffer, 256);
+    if (n < 0) error("Sendto");
+    bzero(buffer, 256);
+    n = read(sockfd, buffer, 256);
+
+    // Preparing for game to start
     while(1) {
         printf("Ready to start the game? (y/n): ");
-        bzero(buffer,256);
-        fgets(buffer,256,stdin);
+        bzero(buffer, 256);
+        fgets(buffer, 256, stdin);
         if(strlen(buffer) == 2 && buffer[0] == 'y') {
-            bzero(buffer,256);
-            buffer[0] = '0';
-            n = write(sockfd,buffer,strlen(buffer));
-            if (n < 0) error("Sendto");
             break;
         } else if(strlen(buffer) == 2 && buffer[0] == 'n') {
             close(sockfd);
@@ -66,69 +71,79 @@ int main(int argc, char *argv[])
         }
     }
 
+    // Actual game 
     while(1) {
-        printf("Letter to guess: ");
-        bzero(buffer,256);
-        fgets(buffer,256,stdin);
-        if(strlen(buffer) == 2 && isalpha(buffer[0]) != 0) {
-            buffer[1] = buffer[0];
-            buffer[0] = '1';
-            buffer[2] = '\0';
-            n = write(sockfd,buffer,strlen(buffer));
-            if (n < 0) error("Sendto");
+        // --------Reading Portion---------
+        n = read(sockfd,buffer,256);
+        if (n < 0) error("recvfrom");
+        if(buffer[0] == '0') { // In game
+            int word_len = buffer[1] - '0';
+            int attempts = buffer[2] - '0';
+            for(int i = 3; i < 3+word_len; i++) {
+                printf("%c", buffer[i]);
+            }
+            printf("\nIncorrect Guesses: ");
+            for(int i = 0; i < attempts; i++) {
+                printf("%c ", buffer[i]);
+            }
+            printf("\n");
+        } else { // Game ends
+            int msg_len;
+            if(buffer[0] == 'a') {
+                msg_len = 10;
+            } else {
+                msg_len = buffer[0] - '0';
+            }
+            printf("The word was ");
+            for(int i = 1; i < msg_len+1; i++) {
+                printf("%c", buffer[i]);
+            }
+            printf("\n");
             n = read(sockfd,buffer,255);
             if (n < 0) error("recvfrom");
-            if(buffer[0] == '0') { // In game
-                int word_len = buffer[1] - '0';
-                int attempts = buffer[2] - '0';
-                for(int i = 3; i < 3+word_len; i++) {
-                    printf("%c", buffer[i]);
-                }
-                printf("\nIncorrect Guesses: ");
-                for(int i = 0; i < attempts; i++) {
-                    printf("%c ", buffer[i]);
-                }
-                printf("\n");
-            } else { // Game ends
-                int msg_len;
-                if(buffer[0] == 'a') {
-                    msg_len = 10;
-                } else {
-                    msg_len = buffer[0] - '0';
-                }
-                printf("The word was ");
-                for(int i = 1; i < msg_len+1; i++) {
-                    printf("%c", buffer[i]);
-                }
-                printf("\n");
-                n = read(sockfd,buffer,255);
-                if (n < 0) error("recvfrom");
-                if(buffer[0] == 'a') {
-                    msg_len = 10;
-                } else {
-                    msg_len = buffer[0] - '0';
-                }
-                for(int i = 1; i < msg_len+1; i++) {
-                    printf("%c", buffer[i]);
-                }
-                printf("\n");
-                n = read(sockfd,buffer,255);
-                if (n < 0) error("recvfrom");
-                if(buffer[0] == 'a') {
-                    msg_len = 10;
-                } else {
-                    msg_len = buffer[0] - '0';
-                }
-                for(int i = 1; i < msg_len+1; i++) {
-                    printf("%c", buffer[i]);
-                }
-                printf("\n");
-                break;
+            if(buffer[0] == 'a') {
+                msg_len = 10;
+            } else {
+                msg_len = buffer[0] - '0';
             }
-        } else {
-            printf("Error! Please guess one letter.\n");
+            for(int i = 1; i < msg_len+1; i++) {
+                printf("%c", buffer[i]);
+            }
+            printf("\n");
+            n = read(sockfd,buffer,255);
+            if (n < 0) error("recvfrom");
+            if(buffer[0] == 'a') {
+                msg_len = 10;
+            } else {
+                msg_len = buffer[0] - '0';
+            }
+            for(int i = 1; i < msg_len+1; i++) {
+                printf("%c", buffer[i]);
+            }
+            printf("\n");
+            break;
         }
+        // --------Reading Portion---------
+        // --------Writing Portion---------
+
+            printf("Error! Please guess one letter.\n");
+
     }
 
     return 0;
 }
+
+/*
+
+printf("Letter to guess: ");
+bzero(buffer,256);
+fgets(buffer,256,stdin);
+buffer[1] = buffer[0];
+buffer[0] = '1';
+buffer[2] = '\0';
+n = write(sockfd,buffer,strlen(buffer));
+if (n < 0) error("Sendto");
+
+if(strlen(buffer) == 2 && isalpha(buffer[0]) != 0) {   
+
+*/
