@@ -10,18 +10,49 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <pthread.h>
+
+/*struct game_elements {
+    int *newsockfd;
+    int *counter;
+};*/
+
+int counter = 0;
 
 void error(const char *msg) {
     perror(msg);
     exit(1);
 }
 
+void * runGame(void * args) {
+    int socket_fd;
+    char buffer[256];
+    bzero(buffer,256);
+    // struct game_elements *g = args;
+    socket_fd = (int)args;
+
+    // run the game
+    strcpy(buffer, "Succesfully connected to the server");
+    char num = counter + '0';
+    int len = strlen(buffer);
+    buffer[len] = num;
+    buffer[len+1] = '\0';
+    int n = write(socket_fd, buffer, 256);
+    if (n < 0) error("ERROR writing to socket");
+
+    // finished with game close connection
+    close(socket_fd);
+    // counter--;
+    return NULL;
+}
+
 int main(int argc, char *argv[]) {
     int sockfd, newsockfd, portno;
+    //pthread_t threads[4];
     socklen_t clilen;
     char buffer[256];
     struct sockaddr_in serv_addr, cli_addr;
-    int n;
+    pthread_t thread;
     if (argc < 2) {
         fprintf(stderr,"Usage: hostname port\n");
         exit(1);
@@ -41,22 +72,23 @@ int main(int argc, char *argv[]) {
     listen(sockfd, 5);
     clilen = sizeof(cli_addr);
 
-    int pid;
-    int counter = 0;
     while (1) {
         newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
+        // struct game_elements args;
+        // args.newsockfd = &newsockfd;
+        // args.counter = &counter; 
         if (newsockfd < 0)
         error("ERROR on accept");
-        //fork new process
-        pid = fork();
-        if (pid < 0) {
-            error("ERROR in new process creation");
-        } else if (pid == 0) {
-            //child process  
-            counter++;
+        if (counter >= 3){
+            //return overloard
+            bzero(buffer, 256);
+            strcpy(buffer, "Screw you");
+            int n = write(newsockfd, buffer, 256);
+            if (n < 0) error("ERROR writing to socket");
         } else {
-            //parent process      
-            close(sockfd);
+            counter++;
+            printf("counter is now %d\n", counter);
+            pthread_create(&thread, NULL, runGame, (void *) (size_t) newsockfd);
         }
     }
     return 0;
@@ -157,9 +189,6 @@ while(1) {
         n = write(newsockfd, buffer, 256);
         if (n < 0) error("ERROR writing to socket");
     }
-    close(newsockfd);  
-    close(sockfd);
-    return 0;
 }
 
 */

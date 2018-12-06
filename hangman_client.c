@@ -21,6 +21,7 @@ void error(const char *msg)
 
 int main(int argc, char *argv[])
 {
+    // Initialize
     int sockfd, portno, n;
     struct sockaddr_in serv_addr;
     struct hostent *server;
@@ -30,6 +31,7 @@ int main(int argc, char *argv[])
        exit(1);
     }
 
+    // Establish connection
     portno = atoi(argv[2]);
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) 
@@ -48,7 +50,32 @@ int main(int argc, char *argv[])
     if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) 
         error("ERROR connecting");
 
-    // Check if the server has an available spot for the client
+    // Test code
+    bzero(buffer, 256);
+    n = read(sockfd,buffer,256);
+    if (n < 0) error("recvfrom");
+    printf("%s\n", buffer);
+    return 0;
+}
+
+/*
+
+printf("Letter to guess: ");
+bzero(buffer,256);
+fgets(buffer,256,stdin);
+buffer[1] = buffer[0];
+buffer[0] = '1';
+buffer[2] = '\0';
+n = write(sockfd,buffer,strlen(buffer));
+if (n < 0) error("Sendto");
+
+if(strlen(buffer) == 2 && isalpha(buffer[0]) != 0) {   
+
+*/
+
+/* 
+
+// Check if the server has an available spot for the client
     bzero(buffer, 256);
     buffer[0] = 'a';
     n = write(sockfd, buffer, 256);
@@ -129,21 +156,4 @@ int main(int argc, char *argv[])
             printf("Error! Please guess one letter.\n");
 
     }
-
-    return 0;
-}
-
-/*
-
-printf("Letter to guess: ");
-bzero(buffer,256);
-fgets(buffer,256,stdin);
-buffer[1] = buffer[0];
-buffer[0] = '1';
-buffer[2] = '\0';
-n = write(sockfd,buffer,strlen(buffer));
-if (n < 0) error("Sendto");
-
-if(strlen(buffer) == 2 && isalpha(buffer[0]) != 0) {   
-
 */
