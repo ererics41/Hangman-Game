@@ -1,7 +1,5 @@
-/* 
-    Tiange Wang, ID: 3717659, CS 176A Homework 5
-    Code Cited: http://www.linuxhowtos.org/data/6/client_c_tcp.c, Sockets Tutorial, Example TCP Client.
-*/
+/* Tiange Wang, Eric Shen */
+/* Code Cited: http://www.linuxhowtos.org/data/6/client_c_tcp.c, Sockets Tutorial, Example TCP Client. */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -55,10 +53,34 @@ int main(int argc, char *argv[])
     n = read(sockfd, buffer, 256);
     if (n < 0) error("recvfrom");
     if(buffer[0] == 'A') {
-        printf("test");
+        int start;
+        printf("Ready to start the game? (y/n): ");
+        while(1) {
+            bzero(buffer, 256);
+            fgets(buffer, 256, stdin);
+            if(strlen(buffer) == 2 && (buffer[0] == 'y' || buffer[0] == 'Y')) {
+                start = 1;
+                break;
+            } else if(strlen(buffer) == 2 && (buffer[0] == 'n' || buffer[0] == 'N')) {
+                start = 0;
+                break;
+            } else {
+                printf("Error! Please enter y or n.\n");
+            }
+        }
+        bzero(buffer,256);
+        buffer[0] = 'B';
+        if(start == 1)
+            buffer[1] = 'y';
+        else
+            buffer[1] = 'n';
+        n = write(sockfd, buffer, 256);
+        if (n < 0) error("Sendto");
+        
     } else {
         printf("%s\n", buffer+1);
     }
+    close(sockfd);
     return 0;
 }
 

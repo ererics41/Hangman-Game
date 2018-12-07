@@ -1,7 +1,6 @@
-/* 
-    Tiange Wang, ID: 3717659, CS 176A Homework 5
-    Code Cited: http://www.linuxhowtos.org/data/6/server_c_tcp.c, Sockets Tutorial, Example TCP Server.
-*/
+/* Tiange Wang, Eric Shen */
+/* Code Cited: http://www.linuxhowtos.org/data/6/server_c_tcp.c, Sockets Tutorial, Example TCP Server. */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -38,11 +37,93 @@ void * runGame(void * args) {
     int n = write(socket_fd, buffer, 256);
     if (n < 0) error("ERROR writing to socket");
 
-    // based on client response
+    // Response based on client response
+    bzero(buffer, 256);
+    n = read(socket_fd, buffer, 256);
+    if (n < 0) error("ERROR reading from socket");
+    if(buffer[1] == 'y'){
+        //run the game 
+        char word[9] = "apple";
+        int word_len = 5;
+        char guess[9];
+        for(int i = 0; i < word_len; i++) {
+            guess[i] = '_';
+        }
+        int incorrects = 0;
+        char incorrect_arr[9];
+        while(1) {
+            // Sending a game packet
+            bzero(buffer, 256);
+            char converted = word_len + '0';
+            char converted_i = incorrects + '0';
+            buffer[0] = 'A';
+            buffer[1] = converted;
+            buffer[2] =  converted_i;
+            strcat(buffer, guess);
+            strcat(buffer, incorrect_arr);
+            int n = write(socket_fd, buffer, 256);
+            if (n < 0) error("ERROR writing to socket");
+
+            // Reading client response
+            bzero(buffer,256);
+            n = read(socket_fd, buffer,256);
+            if (n < 0) error("ERROR reading from socket");
+            char g = buffer[1];
+            int no_correct = 1;
+            int all_correct = 1;
+            // Check the input against the word. If something matches, change the corrspoding position in guess and mark the nothing correct flag as 0
+            for(int i = 0; i < word_len; i++) { 
+                if(word[i] == g) {
+                    guess[i] = g;
+                    no_correct = 0;
+                }
+            }
+            // Check if there are no more underscores in guess anymore. If not, every character has been guessed out and the user wins the game
+            for(int i = 0; i < word_len; i++) {
+                if(guess[i] == '_') {
+                    all_correct = 0;
+                    break;
+                }
+            }
+            // Executes under all correct flag (User wins)
+            if(all_correct == 1) {
+                int total_len = word_len + 8 + 13 + 10 + 3;
+                char len = 'A' + total_len;
+                bzero(buffer, 256);
+                buffer[0] = len;
+                buffer[1] = '\0';
+                strcat(buffer, "The word was ");
+                strcat(buffer, word);
+                strcat(buffer, "\nYou Win!\nGame Over!\n");
+                n = write(socket_fd, buffer, 256);
+                if (n < 0) error("ERROR writing to socket");
+                break; // Success
+            }
+            // Executes under no correct flag(incorrect guess). Appends to the incorrect guesses array and increments the attempt value
+            if(no_correct == 1) {
+                incorrect_arr[incorrects] = buffer[1];
+                incorrects++;
+                incorrect_arr[incorrects] = '\0';
+                if(incorrects >= 6) { // Users fails if there has been 6 attempts
+                    int total_len = word_len + 9 + 13 + 10 + 3;
+                    char len = 'A' + total_len;
+                    bzero(buffer, 256);
+                    buffer[0] = len;
+                    buffer[1] = '\0';
+                    strcat(buffer, "The word was ");
+                    strcat(buffer, word);
+                    strcat(buffer, "\nYou Lose!\nGame Over!\n");
+                    n = write(socket_fd, buffer, 256);
+                    if (n < 0) error("ERROR writing to socket");
+                    break;
+                }
+            }
+        }
+    }
 
     // finished with game close connection
     close(socket_fd);
-    // counter--;
+    counter--;
     return NULL;
 }
 
