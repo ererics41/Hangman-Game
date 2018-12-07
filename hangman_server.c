@@ -30,7 +30,7 @@ void * runGame(void * args) {
     char buffer[256];
     bzero(buffer,256);
     // struct game_elements *g = args;
-    socket_fd = (int)args;
+    socket_fd = (size_t)args;
 
     // response to the initial message
     // **** IMPORTANT: WE ARE USING ASCII LETTER 'A' TO REPRESENT THE NUMBER 0 WITH THE MESSAGE LENGTH BEING THE DIFFERENCE FROM 'A'. ****
