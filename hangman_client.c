@@ -76,7 +76,28 @@ int main(int argc, char *argv[])
             buffer[1] = 'n';
         n = write(sockfd, buffer, 256);
         if (n < 0) error("Sendto");
-        
+        if(start == 1){
+            while(1){
+                // run game
+                n = read(sockfd,buffer,256);
+                if (n < 0) error("recvfrom");
+                if(buffer[0] == 'A') { // In game
+                    int word_len = buffer[1] - '0';
+                    int incorrects = buffer[2] - '0';
+                    for(int i = 3; i < 3+word_len; i++) {
+                        printf("%c", buffer[i]);
+                    }
+                    printf("\nIncorrect Guesses: ");
+                    for(int i = 3+word_len; i < 3+word_len+incorrects; i++) {
+                        printf("%c ", buffer[i]);
+                    }
+                    printf("\n");
+                }else{
+                    printf("%s", buffer+1);
+                    break;    
+                }
+            }
+        }
     } else {
         printf("%s\n", buffer+1);
     }
