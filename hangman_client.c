@@ -50,11 +50,15 @@ int main(int argc, char *argv[])
     if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) 
         error("ERROR connecting");
 
-    // Test code
+    // Waiting for server response to join game
     bzero(buffer, 256);
-    n = read(sockfd,buffer,256);
+    n = read(sockfd, buffer, 256);
     if (n < 0) error("recvfrom");
-    printf("%s\n", buffer);
+    if(buffer[0] == 'A') {
+        printf("test");
+    } else {
+        printf("%s\n", buffer+1);
+    }
     return 0;
 }
 

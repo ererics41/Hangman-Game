@@ -31,14 +31,14 @@ void * runGame(void * args) {
     // struct game_elements *g = args;
     socket_fd = (int)args;
 
-    // run the game
-    strcpy(buffer, "Succesfully connected to the server");
-    char num = counter + '0';
-    int len = strlen(buffer);
-    buffer[len] = num;
-    buffer[len+1] = '\0';
+    // response to the initial message
+    // **** IMPORTANT: WE ARE USING ASCII LETTER 'A' TO REPRESENT THE NUMBER 0 WITH THE MESSAGE LENGTH BEING THE DIFFERENCE FROM 'A'. ****
+    buffer[0] = 'A';
+    buffer[1] = '\0';
     int n = write(socket_fd, buffer, 256);
     if (n < 0) error("ERROR writing to socket");
+
+    // based on client response
 
     // finished with game close connection
     close(socket_fd);
@@ -82,12 +82,14 @@ int main(int argc, char *argv[]) {
         if (counter >= 3){
             //return overloard
             bzero(buffer, 256);
-            strcpy(buffer, "Screw you");
+            buffer[0] = 'R';
+            buffer[1] = '\0';
+            strcat(buffer, "server-overloaded");
             int n = write(newsockfd, buffer, 256);
             if (n < 0) error("ERROR writing to socket");
         } else {
             counter++;
-            printf("counter is now %d\n", counter);
+            // printf("counter is now %d\n", counter);
             pthread_create(&thread, NULL, runGame, (void *) (size_t) newsockfd);
         }
     }
