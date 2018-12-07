@@ -73,7 +73,7 @@ void * runGame(void * args) {
             int all_correct = 1;
             // Check the input against the word. If something matches, change the corrspoding position in guess and mark the nothing correct flag as 0
             for(int i = 0; i < word_len; i++) { 
-                if(word[i] == g) {
+                if(word[i] == g && guess[i] == '_') {
                     guess[i] = g;
                     no_correct = 0;
                 }

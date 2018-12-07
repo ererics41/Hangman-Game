@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
         if (n < 0) error("Sendto");
         if(start == 1){
             while(1){
-                // run game
+                // Run game
                 n = read(sockfd,buffer,256);
                 if (n < 0) error("recvfrom");
                 if(buffer[0] == 'A') { // In game
@@ -95,6 +95,22 @@ int main(int argc, char *argv[])
                 }else{
                     printf("%s", buffer+1);
                     break;    
+                }
+                // User input
+                while(1) {
+                    printf("\nLetter to guess: ");
+                    bzero(buffer, 256);
+                    fgets(buffer, 256, stdin);
+                    if(strlen(buffer) == 2 && isalpha(buffer[0]) != 0) {
+                        buffer[1] = tolower(buffer[0]);
+                        buffer[0] = 'B';
+                        buffer[2] = '\0';
+                        n = write(sockfd, buffer, 256);
+                        if (n < 0) error("Sendto");
+                        break;
+                    } else {
+                        printf("Error! Please enter one letter.\n");
+                    }
                 }
             }
         }
