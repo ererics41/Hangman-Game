@@ -1,5 +1,5 @@
 CC = gcc
-ARGS = -Wall
+ARGS = -lpthread
 
 all: hangman_client hangman_server
 
