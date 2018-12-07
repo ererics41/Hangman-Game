@@ -117,7 +117,7 @@ void * runGame(void * args) {
                     buffer[1] = '\0';
                     strcat(buffer, "The word was ");
                     strcat(buffer, word);
-                    strcat(buffer, "\nYou Lose!\nGame Over!\n");
+                    strcat(buffer, "You Lose!\nGame Over!\n");
                     n = write(socket_fd, buffer, 256);
                     if (n < 0) error("ERROR writing to socket");
                     break;
