@@ -17,6 +17,8 @@
 };*/
 
 int counter = 0;
+char wordsList[15][256];
+int listCount = 0;
 
 void error(const char *msg) {
     perror(msg);
@@ -43,14 +45,17 @@ void * runGame(void * args) {
     if (n < 0) error("ERROR reading from socket");
     if(buffer[1] == 'y'){
         //run the game 
-        char word[9] = "apple";
-        int word_len = 5;
-        char guess[9];
+        //pick randomly from list
+        int r = rand() % listCount; 
+        char word[256];
+        strcpy(word, wordsList[r]);
+        int word_len = strlen(word)-1;
+        char guess[256];
         for(int i = 0; i < word_len; i++) {
             guess[i] = '_';
         }
         int incorrects = 0;
-        char incorrect_arr[9];
+        char incorrect_arr[256];
         while(1) {
             // Sending a game packet
             bzero(buffer, 256);
@@ -128,6 +133,16 @@ void * runGame(void * args) {
 }
 
 int main(int argc, char *argv[]) {
+    // Read from file
+    FILE *fp = fopen("hangman_words.txt", "r");
+    char line[256];
+    while (fgets(line, sizeof(line), fp)) {
+        strcpy(wordsList[listCount], line);
+        bzero(line,256); 
+        listCount++;
+    }
+    fclose(fp);
+
     int sockfd, newsockfd, portno;
     //pthread_t threads[4];
     socklen_t clilen;
